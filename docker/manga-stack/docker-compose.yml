@@ -1,0 +1,29 @@
+services:
+  suwayomi:
+    image: ghcr.io/suwayomi/tachidesk:latest
+    container_name: suwayomi
+    volumes:
+      - ./suwayomi:/home/suwayomi/.local/share/Tachidesk
+      - ./mangadata:/manga
+    ports:
+      - "4567:4567"
+    restart: unless-stopped
+
+  kavita:
+    image: jvmilazz0/kavita:latest
+    container_name: kavita
+    volumes:
+      - ./kavita:/kavita/config
+      - ./mangadata:/manga
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+
+  flaresolverr:
+    image: flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=info
+    ports:
+      - "8191:8191"
+    restart: unless-stopped

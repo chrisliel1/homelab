@@ -1,0 +1,49 @@
+volumes:
+  mysql_data:
+  romm_resources:
+  romm_redis_data:
+
+services:
+  romm:
+    image: rommapp/romm:latest
+    container_name: romm
+    restart: unless-stopped
+    environment:
+      - DB_HOST=romm-db
+      - DB_NAME=romm
+      - DB_USER=${ROMM_DB_USER:?Set ROMM_DB_USER in the root .env}
+      - DB_PASSWD=${ROMM_DB_PASSWORD:?Set ROMM_DB_PASSWORD in the root .env}
+      - ROMM_AUTH_SECRET_KEY=${ROMM_AUTH_SECRET_KEY:?Set ROMM_AUTH_SECRET_KEY in the root .env}
+      - IGDB_CLIENT_ID=${IGDB_CLIENT_ID:-}
+      - IGDB_CLIENT_SECRET=${IGDB_CLIENT_SECRET:-}
+      - STEAMGRIDDB_API_KEY=${STEAMGRIDDB_API_KEY:-}
+      - HASHEOUS_API_ENABLED=true
+    volumes:
+      - romm_resources:/romm/resources
+      - romm_redis_data:/redis-data
+      - ./library:/romm/library
+      - ./assets:/romm/assets
+      - ./config:/romm/config
+    ports:
+      - 80:8080
+    depends_on:
+      romm-db:
+        condition: service_healthy
+
+  romm-db:
+    image: mariadb:latest
+    container_name: romm-db
+    restart: unless-stopped
+    environment:
+      - MARIADB_ROOT_PASSWORD=${ROMM_DB_ROOT_PASSWORD:?Set ROMM_DB_ROOT_PASSWORD in the root .env}
+      - MARIADB_DATABASE=romm
+      - MARIADB_USER=${ROMM_DB_USER:?Set ROMM_DB_USER in the root .env}
+      - MARIADB_PASSWORD=${ROMM_DB_PASSWORD:?Set ROMM_DB_PASSWORD in the root .env}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 30s
+      interval: 10s
+      timeout: 5s
+      retries: 5

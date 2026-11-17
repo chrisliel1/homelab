@@ -1,0 +1,6 @@
+---
+proxmox_backup_storage: "{{ lookup('env', 'PROXMOX_BACKUP_STORAGE') | default('backup-storage', true) }}"
+proxmox_backup_mode: "snapshot"
+proxmox_backup_compress: "zstd"
+proxmox_backup_keep_last: 2
+proxmox_backup_notify_uptime_kuma: "{{ lookup('env', 'PROXMOX_BACKUP_NOTIFY_UPTIME_KUMA') | default(false, true) }}"

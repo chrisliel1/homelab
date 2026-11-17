@@ -1,0 +1,14 @@
+services:
+  patzer:
+      image: ghcr.io/sikamikanikobg/patzer:latest
+      container_name: patzer
+      restart: unless-stopped
+      ports:
+        - "8800:8800"
+      volumes:
+        - ./patzer-data:/app/data
+      deploy:
+        resources:
+          limits:
+            cpus: '2.0'
+            memory: 512M

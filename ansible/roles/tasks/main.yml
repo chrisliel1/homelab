@@ -1,0 +1,25 @@
+---
+- name: "Ejecutar backup nativo (vzdump) para {{ inventory_hostname }} (ID: {{ proxmox_vmid }})"
+  command: >
+    vzdump {{ proxmox_vmid }}
+    --mode {{ proxmox_backup_mode }}
+    --compress {{ proxmox_backup_compress }}
+    --storage {{ proxmox_backup_storage }}
+    --prune-backups 'keep-last={{ proxmox_backup_keep_last }}'
+  delegate_to: "{{ groups['proxmox_nodes'][0] | default('localhost') }}"
+  register: resultado_backup
+
+- name: "Mostrar el registro del backup de {{ inventory_hostname }}"
+  debug:
+    var: resultado_backup.stdout_lines
+  delegate_to: "{{ groups['proxmox_nodes'][0] | default('localhost') }}"
+
+- name: Notificar éxito a Uptime Kuma
+  uri:
+    url: "{{ lookup('env', 'UPTIME_KUMA_PUSH_URL') }}"
+    method: GET
+  delegate_to: localhost
+  when:
+    - proxmox_backup_notify_uptime_kuma | bool
+    - lookup('env', 'UPTIME_KUMA_PUSH_URL') | length > 0
+  ignore_errors: true
